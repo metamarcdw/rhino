@@ -1,0 +1,13 @@
+{
+  "name": "rhino",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dbtest.js",
+  "dependencies": {},
+  "devDependencies": {
+    "semistandard": "^13.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
