@@ -8,7 +8,7 @@ importClass(java.sql.DriverManager);
 
 let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
-const outputLines = [];
+const outputLines = ['name,occupation'];
 
 try {
   conn = DriverManager.getConnection(jdbcUrl);
