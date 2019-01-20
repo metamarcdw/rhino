@@ -6,15 +6,15 @@ importClass(java.nio.file.Paths);
 importClass(java.nio.charset.Charset);
 importClass(java.sql.DriverManager);
 
+let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
-const conn = DriverManager.getConnection(jdbcUrl);
-const stat = conn.createStatement();
-
 const outputLines = [];
-let resultSet;
-try {
-  resultSet = stat.executeQuery('SELECT * FROM People;');
 
+try {
+  const conn = DriverManager.getConnection(jdbcUrl);
+  const stat = conn.createStatement();
+
+  resultSet = stat.executeQuery('SELECT * FROM People;');
   while (resultSet.next()) {
     let name = resultSet.getString('name');
     let occupation = resultSet.getString('occupation');
