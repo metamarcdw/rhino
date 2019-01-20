@@ -11,8 +11,26 @@ const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassw
 const outputLines = [];
 
 try {
-  const conn = DriverManager.getConnection(jdbcUrl);
-  const stat = conn.createStatement();
+  conn = DriverManager.getConnection(jdbcUrl);
+  stat = conn.createStatement();
+
+  stat.executeUpdate('DROP TABLE IF EXISTS People;');
+  stat.executeUpdate('CREATE TABLE People(id INT AUTO_INCREMENT, name VARCHAR(30) NOT NULL, occupation VARCHAR(30) NOT NULL, PRIMARY KEY(id));');
+
+  const prep = conn.prepareStatement('INSERT INTO People (name, occupation) VALUES (?, ?);');
+  prep.setString(1, 'Marc');
+  prep.setString(2, 'IE');
+  prep.addBatch();
+  prep.setString(1, 'Gandhi');
+  prep.setString(2, 'politics');
+  prep.addBatch();
+  prep.setString(1, 'Turing');
+  prep.setString(2, 'computers');
+  prep.addBatch();
+
+  conn.setAutoCommit(false);
+  prep.executeBatch();
+  conn.setAutoCommit(true);
 
   resultSet = stat.executeQuery('SELECT * FROM People;');
   while (resultSet.next()) {
