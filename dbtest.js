@@ -17,7 +17,9 @@ try {
   stat.executeUpdate('DROP TABLE IF EXISTS People;');
   stat.executeUpdate('CREATE TABLE People(id INT AUTO_INCREMENT, name VARCHAR(30) NOT NULL, occupation VARCHAR(30) NOT NULL, PRIMARY KEY(id));');
 
+  conn.setAutoCommit(false);
   const prep = conn.prepareStatement('INSERT INTO People (name, occupation) VALUES (?, ?);');
+
   prep.setString(1, 'Marc');
   prep.setString(2, 'IE');
   prep.addBatch();
@@ -28,8 +30,8 @@ try {
   prep.setString(2, 'computers');
   prep.addBatch();
 
-  conn.setAutoCommit(false);
   prep.executeBatch();
+  conn.commit();
   conn.setAutoCommit(true);
 
   resultSet = stat.executeQuery('SELECT * FROM People;');
@@ -43,6 +45,7 @@ try {
     print('A database access error occurred.');
   e.javaException instanceof java.sql.SQLTimeoutException &&
     print('The driver has determined that the timeout value has been exceeded.');
+  conn.rollback();
 } finally {
   resultSet.close();
   stat.close();
