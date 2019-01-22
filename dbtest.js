@@ -10,7 +10,7 @@ importClass(java.sql.DriverManager);
 
 let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
-const outputLines = ['name,occupation'];
+const outputLines = ['id,name,occupation'];
 
 try {
   conn = DriverManager.getConnection(jdbcUrl);
@@ -38,9 +38,10 @@ try {
 
   resultSet = stat.executeQuery('SELECT * FROM People;');
   while (resultSet.next()) {
+    let id = resultSet.getInt('id');
     let name = resultSet.getString('name');
     let occupation = resultSet.getString('occupation');
-    outputLines.push(name + ',' + occupation);
+    outputLines.push(id + ',' + name + ',' + occupation);
   }
 } catch (e) {
   e.javaException instanceof java.sql.SQLException &&
