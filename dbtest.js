@@ -49,9 +49,9 @@ try {
     print('The driver has determined that the timeout value has been exceeded.');
   conn.rollback();
 } finally {
-  resultSet.close();
-  stat.close();
-  conn.close();
+  if (resultSet) resultSet.close();
+  if (stat) stat.close();
+  if (conn) conn.close();
 }
 
 try {
