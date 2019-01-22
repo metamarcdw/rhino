@@ -1,6 +1,8 @@
 /* eslint-env nashorn */
 /* global importClass Files Paths Charset DriverManager */
 
+// Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
+
 importClass(java.nio.file.Files);
 importClass(java.nio.file.Paths);
 importClass(java.nio.charset.Charset);
