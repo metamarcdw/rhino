@@ -1,12 +1,13 @@
 /* eslint-env nashorn */
-/* global importClass Files Paths Charset DriverManager */
+/* globals importPackage importClass DriverManager Paths Files Charset
+    SQLException SQLTimeoutException InvalidPathException IOException */
 
 // Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
 
-importClass(java.nio.file.Files);
-importClass(java.nio.file.Paths);
+importPackage(java.sql);
+importPackage(java.nio.file);
 importClass(java.nio.charset.Charset);
-importClass(java.sql.DriverManager);
+importClass(java.io.IOException);
 
 let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
@@ -44,9 +45,9 @@ try {
     outputLines.push(id + ',' + name + ',' + occupation);
   }
 } catch (e) {
-  e.javaException instanceof java.sql.SQLException &&
+  e.javaException instanceof SQLException &&
     print('A database access error occurred.');
-  e.javaException instanceof java.sql.SQLTimeoutException &&
+  e.javaException instanceof SQLTimeoutException &&
     print('The driver has determined that the timeout value has been exceeded.');
   conn.rollback();
 } finally {
@@ -59,8 +60,8 @@ try {
   const outputFile = Paths.get('outfile.csv');
   Files.write(outputFile, outputLines, Charset.forName('UTF-8'));
 } catch (e) {
-  e.javaException instanceof java.nio.file.InvalidPathException &&
+  e.javaException instanceof InvalidPathException &&
     print('The path string cannot be converted to a Path.');
-  e.javaException instanceof java.io.IOException &&
+  e.javaException instanceof IOException &&
     print('An I/O error occurred writing to or creating the file.');
 }
