@@ -1,5 +1,5 @@
 /* eslint-env nashorn */
-/* globals importPackage importClass DriverManager Paths Files Charset
+/* globals importPackage importClass DriverManager Paths Files Charset System
     SQLException SQLTimeoutException InvalidPathException IOException */
 
 // Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
@@ -8,6 +8,7 @@ importPackage(java.sql);
 importPackage(java.nio.file);
 importClass(java.nio.charset.Charset);
 importClass(java.io.IOException);
+importClass(java.lang.System);
 
 let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
@@ -56,6 +57,7 @@ try {
   if (conn) conn.close();
 }
 
+if (outputLines.length === 1) System.exit(1);
 try {
   const outputFile = Paths.get('outfile.csv');
   Files.write(outputFile, outputLines, Charset.forName('UTF-8'));
