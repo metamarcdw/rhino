@@ -14,8 +14,8 @@
     "env": "nashorn",
     "globals": [
       "importPackage", "importClass",
-      "DriverManager", "Paths", "Files", "Charset", "System",
-      "SQLException", "SQLTimeoutException", "InvalidPathException", "IOException"
+      "Class", "System", "DriverManager", "Paths", "Files", "Charset",
+      "ClassNotFoundException", "SQLException", "SQLTimeoutException", "InvalidPathException", "IOException"
     ]
   }
 }

@@ -1,10 +1,18 @@
 // Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
 
+importPackage(java.lang);
 importPackage(java.sql);
 importPackage(java.nio.file);
 importClass(java.nio.charset.Charset);
 importClass(java.io.IOException);
-importClass(java.lang.System);
+
+try {
+  Class.forName('org.mariadb.jdbc.Driver');
+} catch (e) {
+  e.javaException instanceof ClassNotFoundException &&
+    print('The Mariadb JDBC Driver was not found.');
+  System.exit(1);
+}
 
 let conn, stat, resultSet;
 const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
