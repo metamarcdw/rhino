@@ -1,7 +1,3 @@
-/* eslint-env nashorn */
-/* globals importPackage importClass DriverManager Paths Files Charset System
-    SQLException SQLTimeoutException InvalidPathException IOException */
-
 // Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
 
 importPackage(java.sql);

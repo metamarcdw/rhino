@@ -9,5 +9,21 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "semistandard": {
+    "env": "nashorn",
+    "globals": [
+      "importPackage",
+      "importClass",
+      "DriverManager",
+      "Paths",
+      "Files",
+      "Charset",
+      "System",
+      "SQLException",
+      "SQLTimeoutException",
+      "InvalidPathException",
+      "IOException"
+    ]
+  }
 }
