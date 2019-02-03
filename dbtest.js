@@ -61,7 +61,7 @@ try {
     print('A database access error occurred.');
   e.javaException instanceof SQLTimeoutException &&
     print('The driver has determined that the timeout value has been exceeded.');
-  conn.rollback();
+  if (conn) conn.rollback();
 } finally {
   if (resultSet) resultSet.close();
   if (stat) stat.close();
