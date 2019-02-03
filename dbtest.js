@@ -7,6 +7,7 @@ importClass(java.nio.charset.Charset);
 importClass(java.io.IOException);
 
 try {
+  // Make sure MariaDB driver is installed.
   Class.forName('org.mariadb.jdbc.Driver');
 } catch (e) {
   e.javaException instanceof ClassNotFoundException &&
@@ -19,12 +20,15 @@ const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassw
 const outputLines = ['id,name,occupation'];
 
 try {
+  // Connect to db4free.net/rhinotest database
   conn = DriverManager.getConnection(jdbcUrl);
   stat = conn.createStatement();
 
+  // Recreate People table
   stat.executeUpdate('DROP TABLE IF EXISTS People;');
   stat.executeUpdate('CREATE TABLE People(id INT AUTO_INCREMENT, name VARCHAR(30) NOT NULL, occupation VARCHAR(30) NOT NULL, PRIMARY KEY(id));');
 
+  // Insert rows into People
   conn.setAutoCommit(false);
   const prep = conn.prepareStatement('INSERT INTO People (name, occupation) VALUES (?, ?);');
 
@@ -42,6 +46,7 @@ try {
   conn.commit();
   conn.setAutoCommit(true);
 
+  // Query all data from People
   resultSet = stat.executeQuery('SELECT * FROM People;');
   while (resultSet.next()) {
     let id = resultSet.getInt('id');
@@ -63,6 +68,7 @@ try {
 
 if (outputLines.length === 1) System.exit(1);
 try {
+  // Output any data from server to CSV file
   const outputFile = Paths.get('outfile.csv');
   Files.write(outputFile, outputLines, Charset.forName('UTF-8'));
 } catch (e) {
