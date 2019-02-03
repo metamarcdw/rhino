@@ -1,8 +1,10 @@
 // Adapted from: https://gist.github.com/davidekh/1e6bc46a8538c3430af6d7261a0cbad7
 
-importPackage(java.lang);
 importPackage(java.sql);
 importPackage(java.nio.file);
+importClass(java.lang.Class);
+importClass(java.lang.System);
+importClass(java.lang.ClassNotFoundException);
 importClass(java.nio.charset.Charset);
 importClass(java.io.IOException);
 
