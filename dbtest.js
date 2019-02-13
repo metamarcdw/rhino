@@ -18,7 +18,7 @@ try {
 }
 
 let conn, stat, resultSet;
-const jdbcUrl = 'jdbc:mysql://db4free.net/rhinotest?user=cypher&password=dbpassword';
+const jdbcUrl = 'jdbc:mariadb://db4free.net/rhinotest?user=cypher&password=dbpassword';
 const outputLines = ['id,name,occupation'];
 
 try {
