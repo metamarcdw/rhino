@@ -1,12 +1,28 @@
+var PASSWORD = '';
+
 function Connection () {
-  if (!JDBC_URL || !USERID || !PASSWORD) {
-    throw new Error('Please provide global Connection variables');
+  if (!JDBC_URL) {
+    throw new Error('Please provide global JDBC_URL variable');
   }
 
-  var IS_ORACLE = true; // TODO: Use another global for this once MSSQL is working
+  var DBMS = 'mariadb'; // TODO: Use another global for this once MSSQL is working
   var ORACLE_CLASS = 'oracle.jdbc.driver.OracleDriver';
   var MSSQL_CLASS = 'net.sourceforge.jtds.jdbc.Driver';
-  this.DRIVER_CLASS = IS_ORACLE ? ORACLE_CLASS : MSSQL_CLASS;
+  var MARIADB_CLASS = 'org.mariadb.jdbc.Driver';
+
+  switch (DBMS) {
+    case 'oracle':
+      this.DRIVER_CLASS = ORACLE_CLASS;
+      break;
+    case 'mssql':
+      this.DRIVER_CLASS = MSSQL_CLASS;
+      break;
+    case 'mariadb':
+      this.DRIVER_CLASS = MARIADB_CLASS;
+      break;
+    default:
+      throw new Error('Uknown DBMS type');
+  }
 
   try {
     java.lang.Class.forName(this.DRIVER_CLASS);
@@ -17,70 +33,61 @@ function Connection () {
       throw err;
     }
   }
+
   this.conn = java.sql.DriverManager.getConnection(JDBC_URL, USERID, PASSWORD);
+  this.stats = [];
+  this.rs = [];
 }
 
 Connection.prototype.setAutoCommit = function (bool) {
   this.conn.setAutoCommit(bool);
-}
-
-Connection.prototype.createStatement = function () {
-  return this.conn.createStatement();
-}
-
-Connection.prototype.prepareStatement = function (query) {
-  return this.conn.prepareStatement(query);
-}
+};
 
 Connection.prototype.closeStatements = function () {
-  if (this.rs) {
-    this.rs.close();
-  }
-  if (this.stat) {
-    this.stat.close();
-  }
-}
+  this.rs.forEach(function (resultSet) {
+    resultSet.close();
+  });
+  this.stats.forEach(function (statement) {
+    statement.close();
+  });
+};
 
 Connection.prototype.close = function () {
-  if (this.conn) {
-    this.conn.close();
-  }
-}
+  this.conn.close();
+};
 
 Connection.prototype.rollback = function () {
-  if (this.conn) {
-    this.conn.rollback();
-  }
-}
+  this.conn.rollback();
+};
 
 function Sql (conn, query) {
-  this.query = query
+  this.query = query;
   var params = Array.prototype.slice.call(arguments, 2);
 
   if (this.query.indexOf('?') !== -1) {
     if (params.length === 0) {
       throw new Error('No params were given');
     }
-    var stat = this.stat = conn.prepareStatement(this.query);
+    var stat = this.stat = conn.conn.prepareStatement(this.query);
     params.forEach(function (param, i) {
       if (typeof param === 'string' || param instanceof java.lang.String) {
         stat.setString(i + 1, param);
       } else if (typeof param === 'number' || param instanceof java.lang.Number) {
         stat.setLong(i + 1, java.lang.Long.valueOf(param));
       } else {
-        throw new Error('Only string and number params are supported');
+        throw new Error('Only string and number params are supported currently');
       }
     });
   } else {
-    this.stat = conn.createStatement();
+    this.stat = conn.conn.createStatement();
   }
-  conn.stat = this.stat;
+  conn.stats.push(this.stat);
 
-  if (this.query.toLowerCase().indexOf('select') !== -1){
+  if (this.query.toLowerCase().indexOf('select') !== -1) {
     var isPrepared = this.stat instanceof java.sql.PreparedStatement;
     this.resultSet = isPrepared ? this.stat.executeQuery() : this.stat.executeQuery(this.query);
     this.rsmd = this.resultSet.getMetaData();
-    conn.rs = this.resultSet;
+    conn.rs.push(this.resultSet);
   }
 }
 
@@ -90,14 +97,24 @@ Sql.prototype.next = function () {
     for (var i = 1; i <= this.rsmd.getColumnCount(); i++) {
       var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
       var type = java.lang.Class.forName(this.rsmd.getColumnClassName(i));
-      this[name] = this.resultSet.getObject(i, type);
+
+      if (type === java.lang.String) {
+        this[name] = this.resultSet.getString(i);
+      } else if (type.getGenericSuperclass() === java.lang.Number) {
+        this[name] = this.resultSet.getLong(i);
+      } else {
+        print('Warning: Column type not implemented\n' + type);
+        this[name] = this.resultSet.getObject(1, type);
+      }
     }
   }
   return result;
-}
+};
 
 Sql.prototype.executeUpdate = function () {
   var isPrepared = this.stat instanceof java.sql.PreparedStatement;
-  var rows = isPrepared ? this.stat.executeUpdate() : this.stat.executeUpdate(this.query);
+  var rows = isPrepared
+    ? this.stat.executeUpdate()
+    : this.stat.executeUpdate(this.query);
   return rows;
-}
+};

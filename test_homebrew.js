@@ -1,6 +1,7 @@
-var JDBC_URL = 'jdbc:oracle:thin:@db4.workforcehosting.net:1599:wfsprod3';
-var USERID = 'centene_prod_mwood';
-var PASSWORD = 'ynQCNLoQ3uK7Xg8uJgZHdf4';
+/* eslint no-unused-vars: 0 */
+var JDBC_URL = 'jdbc:mariadb://db4free.net/rhinotest?user=cypher&password=dbpassword';
+var USERID = null;
+var PASSWORD = null;
 
 function main () {
   var conn;
@@ -9,27 +10,29 @@ function main () {
     conn = new Connection();
     conn.setAutoCommit(false);
 
-    var query = <query>
-      SELECT * FROM employee
-      where sysdate between eff_dt and end_eff_dt
-        and display_employee = ?
-    </query>.toString();
-    var selectSql = new Sql(conn, query, '081685');
+    var query = (<query>
+      SELECT * FROM People where name = ?
+    </query>).toString();
+    var selectSql = new Sql(conn, query, 'Turing');
 
-    print('Running query...');
+    log.info('Running query...');
     while (selectSql.next()) {
-      var firstName = selectSql.first_name;
-      var lastName = selectSql.last_name;
-      var displayEmployee = selectSql.display_employee;
-      print(displayEmployee + ': ' + lastName + ', ' + firstName);
+      var id = selectSql.id;
+      var name = selectSql.name;
+      var occupation = selectSql.occupation;
+      log.info(id + ',' + name + ',' + occupation);
     }
   } catch (err) {
-    print('An error has occurred.');
-    print(err);
-    conn.rollback();
+    log.error('An error has occurred.');
+    log.error(err);
+    if (conn) {
+      conn.rollback();
+    }
   } finally {
-    conn.closeStatements();
-    conn.close();
+    if (conn) {
+      conn.closeStatements();
+      conn.close();
+    }
   }
 }
 

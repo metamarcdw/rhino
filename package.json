@@ -14,8 +14,8 @@
     "env": "nashorn",
     "globals": [
       "importPackage", "importClass",
-      "Class", "System", "DriverManager", "Paths", "Files", "Charset",
-      "ClassNotFoundException", "SQLException", "SQLTimeoutException", "InvalidPathException", "IOException"
+      "Connection", "Sql", "log",
+      "JDBC_URL", "USERID", "PASSWORD"
     ]
   }
 }
