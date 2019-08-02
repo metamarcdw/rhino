@@ -56,6 +56,10 @@ Connection.prototype.close = function () {
   this.conn.close();
 };
 
+Connection.prototype.commit = function () {
+  this.conn.commit();
+};
+
 Connection.prototype.rollback = function () {
   this.conn.rollback();
 };
@@ -63,13 +67,12 @@ Connection.prototype.rollback = function () {
 function Sql (conn, query) {
   this.query = query;
   var params = Array.prototype.slice.call(arguments, 2);
+  var jdbcConn = conn.getWrappedConnection();
 
   if (this.query.indexOf('?') !== -1) {
     if (params.length === 0) {
       throw new Error('No params were given');
     }
-
-    var jdbcConn = conn.getWrappedConnection();
     var stat = this.stat = jdbcConn.prepareStatement(this.query);
 
     params.forEach(function (param, i) {
@@ -106,7 +109,7 @@ Sql.prototype.next = function () {
       } else if (type.getGenericSuperclass() === java.lang.Number) {
         this[name] = this.resultSet.getLong(i);
       } else {
-        print('Warning: Column type not implemented\n' + type);
+        print('Warning: Column type (' + type + ') not implemented. Using getObject.');
         this[name] = this.resultSet.getObject(1, type);
       }
     }
@@ -116,8 +119,6 @@ Sql.prototype.next = function () {
 
 Sql.prototype.executeUpdate = function () {
   var isPrepared = this.stat instanceof java.sql.PreparedStatement;
-  var rows = isPrepared
-    ? this.stat.executeUpdate()
-    : this.stat.executeUpdate(this.query);
+  var rows = isPrepared ? this.stat.executeUpdate() : this.stat.executeUpdate(this.query);
   return rows;
 };

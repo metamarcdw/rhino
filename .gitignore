@@ -1,4 +1,4 @@
 node_modules/
 package-lock.json
 outfile.csv
-temp*.json
+temp*.js
