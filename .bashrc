@@ -3,8 +3,7 @@ rhino() {
 }
 
 homebrew() {
-  sed "s/log\.\w*/print/g" $1 > temp1.js
-  cat ~/Documents/code/github/rhino/homebrew.js temp1.js > temp2.js
-  rhino temp2.js
-  rm temp*.js
+  cat ~/Documents/code/github/rhino/homebrew.js $1 > temp.js
+  rhino temp.js
+  rm temp.js
 }

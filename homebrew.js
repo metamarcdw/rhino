@@ -74,11 +74,12 @@ function Sql (conn, query) {
     }
     this.stat = jdbcConn.prepareStatement(this.query);
 
-    params.forEach(function (param, i) {
+    params.forEach(function (param, index) {
+      index++; // 1-indexed
       if (typeof param === 'string' || param instanceof java.lang.String) {
-        this.stat.setString(i + 1, param);
+        this.stat.setString(index, param);
       } else if (typeof param === 'number' || param instanceof java.lang.Number) {
-        this.stat.setLong(i + 1, java.lang.Long.valueOf(param));
+        this.stat.setLong(index, java.lang.Long.valueOf(param));
       } else {
         throw new Error('Only string and number params are supported currently');
       }
@@ -99,7 +100,7 @@ function Sql (conn, query) {
 Sql.prototype.next = function () {
   var result = this.resultSet.next();
   if (result) {
-    for (var i = 1; i <= this.rsmd.getColumnCount(); i++) {
+    for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
       var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
       var type = java.lang.Class.forName(this.rsmd.getColumnClassName(i));
 
@@ -126,4 +127,22 @@ Sql.prototype.executeUpdate = function () {
   var isPrepared = this.stat instanceof java.sql.PreparedStatement;
   var rows = this.stat.executeUpdate(isPrepared ? undefined : this.query);
   return rows;
+};
+
+var log = {
+  info: function (text) {
+    print(text);
+  },
+
+  warning: function (text) {
+    print(text);
+  },
+
+  error: function (text) {
+    print(text);
+  },
+
+  summary: function (text) {
+    print(text);
+  }
 };
