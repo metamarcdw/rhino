@@ -24,10 +24,9 @@ function Connection () {
     java.lang.Class.forName(DRIVER_CLASS);
   } catch (err) {
     if (err.javaException instanceof java.lang.ClassNotFoundException) {
-      throw new Error('The JDBC Driver was not found.');
-    } else {
-      throw err;
+      print('The JDBC Driver was not found.');
     }
+    throw err;
   }
 
   this.conn = java.sql.DriverManager.getConnection(JDBC_URL, USERID, PASSWORD);
@@ -73,17 +72,17 @@ function Sql (conn, query) {
     if (params.length === 0) {
       throw new Error('No params were given');
     }
-    var stat = this.stat = jdbcConn.prepareStatement(this.query);
+    this.stat = jdbcConn.prepareStatement(this.query);
 
     params.forEach(function (param, i) {
       if (typeof param === 'string' || param instanceof java.lang.String) {
-        stat.setString(i + 1, param);
+        this.stat.setString(i + 1, param);
       } else if (typeof param === 'number' || param instanceof java.lang.Number) {
-        stat.setLong(i + 1, java.lang.Long.valueOf(param));
+        this.stat.setLong(i + 1, java.lang.Long.valueOf(param));
       } else {
         throw new Error('Only string and number params are supported currently');
       }
-    });
+    }, this);
   } else {
     this.stat = jdbcConn.createStatement();
   }

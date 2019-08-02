@@ -12,9 +12,9 @@ function main () {
     conn.setAutoCommit(false);
 
     var query = (<query>
-      SELECT * FROM People
+      SELECT * FROM People where name = ?
     </query>).toString();
-    var selectSql = new Sql(conn, query);
+    var selectSql = new Sql(conn, query, 'Turing');
 
     log.info('Running query...');
     while (selectSql.next()) {
