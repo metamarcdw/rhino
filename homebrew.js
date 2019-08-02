@@ -1,31 +1,27 @@
 var PASSWORD = '';
 
 function Connection () {
-  if (!JDBC_URL) {
-    throw new Error('Please provide global JDBC_URL variable');
+  if (!DBMS || !JDBC_URL) {
+    throw new Error('Please provide required global variables');
   }
 
-  var DBMS = 'mariadb'; // TODO: Use another global for this once MSSQL is working
-  var ORACLE_CLASS = 'oracle.jdbc.driver.OracleDriver';
-  var MSSQL_CLASS = 'net.sourceforge.jtds.jdbc.Driver';
-  var MARIADB_CLASS = 'org.mariadb.jdbc.Driver';
-
+  var DRIVER_CLASS;
   switch (DBMS) {
     case 'oracle':
-      this.DRIVER_CLASS = ORACLE_CLASS;
+      DRIVER_CLASS = 'oracle.jdbc.driver.OracleDriver';
       break;
     case 'mssql':
-      this.DRIVER_CLASS = MSSQL_CLASS;
+      DRIVER_CLASS = 'net.sourceforge.jtds.jdbc.Driver';
       break;
     case 'mariadb':
-      this.DRIVER_CLASS = MARIADB_CLASS;
+      DRIVER_CLASS = 'org.mariadb.jdbc.Driver';
       break;
     default:
       throw new Error('Uknown DBMS type');
   }
 
   try {
-    java.lang.Class.forName(this.DRIVER_CLASS);
+    java.lang.Class.forName(DRIVER_CLASS);
   } catch (err) {
     if (err.javaException instanceof java.lang.ClassNotFoundException) {
       throw new Error('The JDBC Driver was not found.');
