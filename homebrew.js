@@ -124,6 +124,6 @@ Sql.prototype.next = function () {
 
 Sql.prototype.executeUpdate = function () {
   var isPrepared = this.stat instanceof java.sql.PreparedStatement;
-  var rows = isPrepared ? this.stat.executeUpdate() : this.stat.executeUpdate(this.query);
+  var rows = this.stat.executeUpdate(isPrepared ? undefined : this.query);
   return rows;
 };
