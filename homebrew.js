@@ -107,7 +107,13 @@ Sql.prototype.next = function () {
       if (type === java.lang.String) {
         this[name] = this.resultSet.getString(i);
       } else if (type.getGenericSuperclass() === java.lang.Number) {
-        this[name] = this.resultSet.getLong(i);
+        if (type === java.lang.Double || type === java.lang.Float) {
+          this[name] = this.resultSet.getDouble(i);
+        } else {
+          this[name] = this.resultSet.getLong(i);
+        }
+      } else if (type === java.sql.Date) {
+        this[name] = this.resultSet.getDate(i).toString();
       } else {
         print('Warning: Column type (' + type + ') not implemented. Using getObject.');
         this[name] = this.resultSet.getObject(1, type);

@@ -1,5 +1,5 @@
 rhino() {
-	java -cp "/home/cypher/Documents/rhino/rhino-1.7.11.jar:." org.mozilla.javascript.tools.shell.Main "$@"
+  java -cp "/home/cypher/Documents/rhino/rhino-1.7.11.jar:." org.mozilla.javascript.tools.shell.Main "$@"
 }
 
 homebrew() {
