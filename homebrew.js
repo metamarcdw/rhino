@@ -35,6 +35,10 @@ function Connection () {
   this.rs = [];
 }
 
+Connection.prototype.getWrappedConnection = function () {
+  return this.conn;
+};
+
 Connection.prototype.setAutoCommit = function (bool) {
   this.conn.setAutoCommit(bool);
 };
@@ -64,7 +68,10 @@ function Sql (conn, query) {
     if (params.length === 0) {
       throw new Error('No params were given');
     }
-    var stat = this.stat = conn.conn.prepareStatement(this.query);
+
+    var jdbcConn = conn.getWrappedConnection();
+    var stat = this.stat = jdbcConn.prepareStatement(this.query);
+
     params.forEach(function (param, i) {
       if (typeof param === 'string' || param instanceof java.lang.String) {
         stat.setString(i + 1, param);
@@ -75,7 +82,7 @@ function Sql (conn, query) {
       }
     });
   } else {
-    this.stat = conn.conn.createStatement();
+    this.stat = jdbcConn.createStatement();
   }
   conn.stats.push(this.stat);
 
