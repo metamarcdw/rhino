@@ -133,15 +133,12 @@ var log = {
   info: function (text) {
     print(text);
   },
-
   warning: function (text) {
     print(text);
   },
-
   error: function (text) {
     print(text);
   },
-
   summary: function (text) {
     print(text);
   }
