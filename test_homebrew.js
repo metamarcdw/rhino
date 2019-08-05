@@ -1,8 +1,9 @@
-/* eslint no-unused-vars: 0 */
+/* eslint-disable no-unused-vars */
 var DBMS = 'mariadb';
 var JDBC_URL = 'jdbc:mariadb://db4free.net/rhinotest?user=cypher&password=dbpassword';
 var USERID = null;
 var PASSWORD = null;
+/* eslint-enable no-unused-vars */
 
 function main () {
   var conn;

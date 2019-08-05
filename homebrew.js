@@ -1,4 +1,3 @@
-/* eslint no-unused-vars: 0 */
 importClass(java.lang.Long);
 importClass(java.lang.Double);
 importClass(java.lang.Float);
@@ -145,7 +144,7 @@ Sql.prototype.executeUpdate = function () {
   return rows;
 };
 
-var log = {
+var log = { // eslint-disable-line no-unused-vars
   info: print,
   warning: print,
   error: print,
