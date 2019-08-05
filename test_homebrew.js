@@ -12,9 +12,9 @@ function main () {
     conn.setAutoCommit(false);
 
     var query = (<query>
-      SELECT * FROM People where name = ?
+      SELECT * FROM People where name in (?, ?)
     </query>).toString();
-    var selectSql = new Sql(conn, query, 'Turing');
+    var selectSql = new Sql(conn, query, 'Gandhi', 'Turing');
 
     log.info('Running query...');
     while (selectSql.next()) {
@@ -22,6 +22,7 @@ function main () {
       var name = selectSql.name;
       var occupation = selectSql.occupation;
       log.info(id + ',' + name + ',' + occupation);
+      log.incrementRecordCount();
     }
   } catch (err) {
     log.error('An error has occurred.');

@@ -1,3 +1,4 @@
+/* eslint no-unused-vars: 0 */
 var PASSWORD = '';
 
 function Connection () {
@@ -130,16 +131,9 @@ Sql.prototype.executeUpdate = function () {
 };
 
 var log = {
-  info: function (text) {
-    print(text);
-  },
-  warning: function (text) {
-    print(text);
-  },
-  error: function (text) {
-    print(text);
-  },
-  summary: function (text) {
-    print(text);
-  }
+  info: print,
+  warning: print,
+  error: print,
+  summary: print,
+  incrementRecordCount: function () {}
 };
