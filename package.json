@@ -14,6 +14,9 @@
     "env": "nashorn",
     "globals": [
       "importPackage", "importClass",
+      "Class", "ClassNotFoundException",
+      "DriverManager", "PreparedStatement",
+      "Long", "Double", "Float",
       "Connection", "Sql", "log",
       "DBMS", "JDBC_URL", "USERID", "PASSWORD"
     ]

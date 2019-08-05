@@ -1,4 +1,15 @@
 /* eslint no-unused-vars: 0 */
+importClass(java.lang.Long);
+importClass(java.lang.Double);
+importClass(java.lang.Float);
+importClass(java.lang.Class);
+importClass(java.lang.ClassNotFoundException);
+importPackage(java.sql);
+
+var JavaString = java.lang.String;
+var JavaNumber = java.lang.Number;
+var JavaSqlDate = java.sql.Date;
+
 var PASSWORD = '';
 
 function Connection () {
@@ -22,15 +33,15 @@ function Connection () {
   }
 
   try {
-    java.lang.Class.forName(DRIVER_CLASS);
+    Class.forName(DRIVER_CLASS);
   } catch (err) {
-    if (err.javaException instanceof java.lang.ClassNotFoundException) {
+    if (err.javaException instanceof ClassNotFoundException) {
       print('The JDBC Driver was not found.');
     }
     throw err;
   }
 
-  this.conn = java.sql.DriverManager.getConnection(JDBC_URL, USERID, PASSWORD);
+  this.conn = DriverManager.getConnection(JDBC_URL, USERID, PASSWORD);
   this.stats = [];
   this.rs = [];
 }
@@ -77,10 +88,10 @@ function Sql (conn, query) {
 
     params.forEach(function (param, index) {
       index++; // 1-indexed
-      if (typeof param === 'string' || param instanceof java.lang.String) {
+      if (typeof param === 'string' || param instanceof JavaString) {
         this.stat.setString(index, param);
-      } else if (typeof param === 'number' || param instanceof java.lang.Number) {
-        this.stat.setLong(index, java.lang.Long.valueOf(param));
+      } else if (typeof param === 'number' || param instanceof JavaNumber) {
+        this.stat.setLong(index, Long.valueOf(param));
       } else {
         throw new Error('Only string and number params are supported currently');
       }
@@ -91,8 +102,10 @@ function Sql (conn, query) {
   conn.stats.push(this.stat);
 
   if (this.query.toLowerCase().indexOf('select') !== -1) {
-    var isPrepared = this.stat instanceof java.sql.PreparedStatement;
-    this.resultSet = isPrepared ? this.stat.executeQuery() : this.stat.executeQuery(this.query);
+    var isPrepared = this.stat instanceof PreparedStatement;
+    this.resultSet = isPrepared
+      ? this.stat.executeQuery()
+      : this.stat.executeQuery(this.query);
     this.rsmd = this.resultSet.getMetaData();
     conn.rs.push(this.resultSet);
   }
@@ -103,17 +116,17 @@ Sql.prototype.next = function () {
   if (result) {
     for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
       var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
-      var type = java.lang.Class.forName(this.rsmd.getColumnClassName(i));
+      var type = Class.forName(this.rsmd.getColumnClassName(i));
 
-      if (type === java.lang.String) {
+      if (type === JavaString) {
         this[name] = this.resultSet.getString(i);
-      } else if (type.getGenericSuperclass() === java.lang.Number) {
-        if (type === java.lang.Double || type === java.lang.Float) {
+      } else if (type.getGenericSuperclass() === JavaNumber) {
+        if (type === Double || type === Float) {
           this[name] = this.resultSet.getDouble(i);
         } else {
           this[name] = this.resultSet.getLong(i);
         }
-      } else if (type === java.sql.Date) {
+      } else if (type === JavaSqlDate) {
         this[name] = this.resultSet.getDate(i).toString();
       } else {
         print('Warning: Column type (' + type + ') not implemented. Using getObject.');
@@ -125,8 +138,10 @@ Sql.prototype.next = function () {
 };
 
 Sql.prototype.executeUpdate = function () {
-  var isPrepared = this.stat instanceof java.sql.PreparedStatement;
-  var rows = this.stat.executeUpdate(isPrepared ? undefined : this.query);
+  var isPrepared = this.stat instanceof PreparedStatement;
+  var rows = isPrepared
+    ? this.stat.executeUpdate()
+    : this.stat.executeUpdate(this.query);
   return rows;
 };
 
