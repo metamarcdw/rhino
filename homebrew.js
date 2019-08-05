@@ -100,7 +100,7 @@ function Sql (conn, query) {
   }
   conn.stats.push(this.stat);
 
-  if (this.query.toLowerCase().indexOf('select') !== -1) {
+  if (/^\s*select/i.test(this.query)) {
     var isPrepared = this.stat instanceof PreparedStatement;
     this.resultSet = isPrepared
       ? this.stat.executeQuery()
@@ -137,6 +137,9 @@ Sql.prototype.next = function () {
 };
 
 Sql.prototype.executeUpdate = function () {
+  if (!/^\s*(insert|update|delete)/i.test(this.query)) {
+    throw new Error('The given query is not an update');
+  }
   var isPrepared = this.stat instanceof PreparedStatement;
   var rows = isPrepared
     ? this.stat.executeUpdate()
@@ -149,5 +152,7 @@ var log = { // eslint-disable-line no-unused-vars
   warning: print,
   error: print,
   summary: print,
-  incrementRecordCount: function () {}
+  incrementRecordCount: function () {
+    print('Warning: incrementRecordCount is a NOP');
+  }
 };
