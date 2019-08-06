@@ -91,7 +91,11 @@ function Sql (conn, query) {
       if (typeof param === 'string' || param instanceof JavaString) {
         this.stat.setString(index, param);
       } else if (typeof param === 'number' || param instanceof JavaNumber) {
-        this.stat.setLong(index, Long.valueOf(param));
+        if (param % 1 !== 0 || param instanceof Double || param instanceof Float) {
+          this.stat.setDouble(index, Double.valueOf(param));
+        } else {
+          this.stat.setLong(index, Long.valueOf(param));
+        }
       } else {
         throw new Error('Only string and number params are supported currently');
       }
