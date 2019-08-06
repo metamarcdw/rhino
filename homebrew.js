@@ -75,9 +75,10 @@ Connection.prototype.rollback = function () {
 };
 
 function Sql (conn, query) {
+  this.conn = conn;
   this.query = query;
   var params = Array.prototype.slice.call(arguments, 2);
-  var jdbcConn = conn.getWrappedConnection();
+  var jdbcConn = this.conn.getWrappedConnection();
 
   if (this.query.indexOf('?') !== -1) {
     if (params.length === 0) {
@@ -98,19 +99,18 @@ function Sql (conn, query) {
   } else {
     this.stat = jdbcConn.createStatement();
   }
-  conn.stats.push(this.stat);
+  this.conn.stats.push(this.stat);
+}
 
-  if (/^\s*select/i.test(this.query)) {
+Sql.prototype.next = function () {
+  if (!this.resultSet && /^\s*select/i.test(this.query)) {
     var isPrepared = this.stat instanceof PreparedStatement;
     this.resultSet = isPrepared
       ? this.stat.executeQuery()
       : this.stat.executeQuery(this.query);
     this.rsmd = this.resultSet.getMetaData();
-    conn.rs.push(this.resultSet);
+    this.conn.rs.push(this.resultSet);
   }
-}
-
-Sql.prototype.next = function () {
   var result = this.resultSet.next();
   if (result) {
     for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
