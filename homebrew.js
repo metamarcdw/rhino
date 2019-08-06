@@ -45,7 +45,7 @@ function Connection () {
   this.rs = [];
 }
 
-Connection.prototype.getWrappedConnection = function () {
+Connection.prototype._getWrappedConnection = function () {
   return this.conn;
 };
 
@@ -78,33 +78,36 @@ function Sql (conn, query) {
   this.conn = conn;
   this.query = query;
   var params = Array.prototype.slice.call(arguments, 2);
-  var jdbcConn = this.conn.getWrappedConnection();
+  var jdbcConn = this.conn._getWrappedConnection();
 
   if (this.query.indexOf('?') !== -1) {
     if (params.length === 0) {
       throw new Error('No params were given');
     }
     this.stat = jdbcConn.prepareStatement(this.query);
-
-    params.forEach(function (param, index) {
-      index++; // 1-indexed
-      if (typeof param === 'string' || param instanceof JavaString) {
-        this.stat.setString(index, param);
-      } else if (typeof param === 'number' || param instanceof JavaNumber) {
-        if (param % 1 !== 0 || param instanceof Double || param instanceof Float) {
-          this.stat.setDouble(index, Double.valueOf(param));
-        } else {
-          this.stat.setLong(index, Long.valueOf(param));
-        }
-      } else {
-        throw new Error('Only string and number params are supported currently');
-      }
-    }, this);
+    this._mapParams(params);
   } else {
     this.stat = jdbcConn.createStatement();
   }
   this.conn.stats.push(this.stat);
 }
+
+Sql.prototype._mapParams = function (params) {
+  params.forEach(function (param, index) {
+    index++; // 1-indexed
+    if (typeof param === 'string' || param instanceof JavaString) {
+      this.stat.setString(index, param);
+    } else if (typeof param === 'number' || param instanceof JavaNumber) {
+      if (param % 1 !== 0 || param instanceof Double || param instanceof Float) {
+        this.stat.setDouble(index, Double.valueOf(param));
+      } else {
+        this.stat.setLong(index, Long.valueOf(param));
+      }
+    } else {
+      throw new Error('Only string and number params are supported currently');
+    }
+  }, this);
+};
 
 Sql.prototype.next = function () {
   if (!this.resultSet && /^\s*select/i.test(this.query)) {
@@ -117,27 +120,31 @@ Sql.prototype.next = function () {
   }
   var result = this.resultSet.next();
   if (result) {
-    for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
-      var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
-      var type = Class.forName(this.rsmd.getColumnClassName(i));
-
-      if (type === JavaString) {
-        this[name] = this.resultSet.getString(i);
-      } else if (type.getGenericSuperclass() === JavaNumber) {
-        if (type === Double || type === Float) {
-          this[name] = this.resultSet.getDouble(i);
-        } else {
-          this[name] = this.resultSet.getLong(i);
-        }
-      } else if (type === JavaSqlDate) {
-        this[name] = this.resultSet.getDate(i).toString();
-      } else {
-        print('Warning: Column type (' + type + ') not implemented. Using getObject.');
-        this[name] = this.resultSet.getObject(1, type);
-      }
-    }
+    this._mapResults();
   }
   return result;
+};
+
+Sql.prototype._mapResults = function () {
+  for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
+    var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
+    var type = Class.forName(this.rsmd.getColumnClassName(i));
+
+    if (type === JavaString) {
+      this[name] = this.resultSet.getString(i);
+    } else if (type.getGenericSuperclass() === JavaNumber) {
+      if (type === Double || type === Float) {
+        this[name] = this.resultSet.getDouble(i);
+      } else {
+        this[name] = this.resultSet.getLong(i);
+      }
+    } else if (type === JavaSqlDate) {
+      this[name] = this.resultSet.getDate(i).toString();
+    } else {
+      print('Warning: Column type (' + type + ') not implemented. Using getObject.');
+      this[name] = this.resultSet.getObject(1, type);
+    }
+  }
 };
 
 Sql.prototype.executeUpdate = function () {
