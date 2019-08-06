@@ -53,6 +53,14 @@ Connection.prototype.setAutoCommit = function (bool) {
   this.conn.setAutoCommit(bool);
 };
 
+Connection.prototype.commit = function () {
+  this.conn.commit();
+};
+
+Connection.prototype.rollback = function () {
+  this.conn.rollback();
+};
+
 Connection.prototype.closeStatements = function () {
   this.rs.forEach(function (resultSet) {
     resultSet.close();
@@ -64,14 +72,6 @@ Connection.prototype.closeStatements = function () {
 
 Connection.prototype.close = function () {
   this.conn.close();
-};
-
-Connection.prototype.commit = function () {
-  this.conn.commit();
-};
-
-Connection.prototype.rollback = function () {
-  this.conn.rollback();
 };
 
 function Sql (conn, query) {
