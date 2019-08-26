@@ -77,15 +77,17 @@ Connection.prototype.close = function () {
 function Sql (conn, query) {
   this.conn = conn;
   this.query = query;
+  this.noParams = false;
   var params = Array.prototype.slice.call(arguments, 2);
   var jdbcConn = this.conn._getWrappedConnection();
 
   if (this.query.indexOf('?') !== -1) {
-    if (params.length === 0) {
-      throw new Error('No params were given');
-    }
     this.stat = jdbcConn.prepareStatement(this.query);
-    this._mapParams(params);
+    if (params.length === 0) {
+      this.noParams = true;
+    } else {
+      this._mapParams(params);
+    }
   } else {
     this.stat = jdbcConn.createStatement();
   }
@@ -109,9 +111,23 @@ Sql.prototype._mapParams = function (params) {
   }, this);
 };
 
+Sql.prototype._getParams = function () {
+  var params = [];
+  for (var i = 0; i <= 100; i++) {
+    if (this[i]) {
+      params.push(this[i]);
+    }
+  }
+  return params;
+};
+
 Sql.prototype.next = function () {
   if (!this.resultSet && /^\s*select/i.test(this.query)) {
     var isPrepared = this.stat instanceof PreparedStatement;
+    if (isPrepared && this.noParams) {
+      var params = this._getParams();
+      this._mapParams(params);
+    }
     this.resultSet = isPrepared
       ? this.stat.executeQuery()
       : this.stat.executeQuery(this.query);
@@ -152,18 +168,46 @@ Sql.prototype.executeUpdate = function () {
     throw new Error('The given query is not an update');
   }
   var isPrepared = this.stat instanceof PreparedStatement;
+  if (isPrepared && this.noParams) {
+    var params = this._getParams();
+    this._mapParams(params);
+  }
   var rows = isPrepared
     ? this.stat.executeUpdate()
     : this.stat.executeUpdate(this.query);
   return rows;
 };
 
+function formatTimestamp (date) {
+  var pad = function (val) {
+    return ('00' + val).slice(-2);
+  };
+  return date.getFullYear() + '-' +
+    pad((date.getMonth() + 1)) + '-' +
+    pad(date.getDate()) + ' ' +
+    pad(date.getHours()) + ':' +
+    pad(date.getMinutes()) + ':' +
+    pad(date.getSeconds());
+}
+
+function getLogFunc (type) {
+  return function (text) {
+    var time = formatTimestamp(new Date());
+    print('[' + type.toUpperCase() + '] ' + time + ' ' + text);
+  };
+}
+
 var log = { // eslint-disable-line no-unused-vars
-  info: print,
-  warning: print,
-  error: print,
-  summary: print,
+  debug: getLogFunc('debug'),
+  info: getLogFunc('info'),
+  warning: getLogFunc('warning'),
+  error: getLogFunc('error'),
+  summary: getLogFunc('summary'),
   incrementRecordCount: function () {
     print('Warning: incrementRecordCount is a NOP');
   }
+};
+
+var jsHost = { // eslint-disable-line no-unused-vars
+  throwIfAbortRequested: function () {}
 };
