@@ -226,9 +226,7 @@ var log = { // eslint-disable-line no-unused-vars
   warning: getLogFunc('warning'),
   error: getLogFunc('error'),
   summary: getLogFunc('summary'),
-  incrementRecordCount: function () {
-    print('Warning: incrementRecordCount is a NOP');
-  }
+  incrementRecordCount: function () {}
 };
 
 var jsHost = { // eslint-disable-line no-unused-vars
