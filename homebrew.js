@@ -137,6 +137,9 @@ Sql.prototype.next = function () {
   var result = this.resultSet.next();
   if (result) {
     this._mapResults();
+  } else {
+    this.resultSet.close();
+    this.stat.close();
   }
   return result;
 };
