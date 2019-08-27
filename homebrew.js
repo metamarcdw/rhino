@@ -49,8 +49,16 @@ Connection.prototype._getWrappedConnection = function () {
   return this.conn;
 };
 
+Connection.prototype.executePreparedStatements = function () {
+  throw new Error('Homebrew Connection does not support execution of statements. Use a Sql object');
+};
+
 Connection.prototype.setAutoCommit = function (bool) {
   this.conn.setAutoCommit(bool);
+};
+
+Connection.prototype.getAutoCommit = function () {
+  return this.conn.getAutoCommit();
 };
 
 Connection.prototype.commit = function () {
@@ -138,8 +146,7 @@ Sql.prototype.next = function () {
   if (result) {
     this._mapResults();
   } else {
-    this.resultSet.close();
-    this.stat.close();
+    this.close();
   }
   return result;
 };
@@ -181,12 +188,25 @@ Sql.prototype.executeUpdate = function () {
   return rows;
 };
 
+Sql.prototype.size = function () {
+  throw new Error('Sql.size() is deprecated. Do not use.');
+};
+
+Sql.prototype.close = function () {
+  if (this.stat) {
+    this.stat.close();
+  }
+  if (this.resultSet) {
+    this.resultSet.close();
+  }
+};
+
 function formatTimestamp (date) {
   var pad = function (val) {
     return ('00' + val).slice(-2);
   };
   return date.getFullYear() + '-' +
-    pad((date.getMonth() + 1)) + '-' +
+    pad(date.getMonth() + 1) + '-' +
     pad(date.getDate()) + ' ' +
     pad(date.getHours()) + ':' +
     pad(date.getMinutes()) + ':' +
