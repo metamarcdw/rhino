@@ -168,9 +168,11 @@ Sql.prototype._mapResults = function () {
       this[name] = this.resultSet.getDate(i).toString();
     } else if ('' + type === 'interface oracle.jdbc.OracleNClob') {
       var clob = this.resultSet.getNClob(i);
-      var clobText = clob.getSubString(1, clob.length());
-      clob.free();
-      this[name] = clobText;
+      if (clob) {
+        var clobText = clob.getSubString(1, clob.length());
+        clob.free();
+        this[name] = clobText;
+      }
     } else {
       print('Warning: Column type (' + type + ') not implemented. Using getObject.');
       this[name] = this.resultSet.getObject(1, type);
