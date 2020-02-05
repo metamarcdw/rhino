@@ -5,6 +5,8 @@ var USERID = null;
 var PASSWORD = null;
 /* eslint-enable no-unused-vars */
 
+load('homebrew.js');
+
 function main () {
   var conn;
 

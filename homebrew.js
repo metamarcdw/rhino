@@ -9,23 +9,20 @@ var JavaString = java.lang.String;
 var JavaNumber = java.lang.Number;
 var JavaSqlDate = java.sql.Date;
 
-var PASSWORD = '';
-
 function Connection () {
   if (!DBMS || !JDBC_URL) {
     throw new Error('Please provide required global variables');
   }
 
-  var DRIVER_CLASS;
   switch (DBMS) {
     case 'oracle':
-      DRIVER_CLASS = 'oracle.jdbc.driver.OracleDriver';
+      var DRIVER_CLASS = 'oracle.jdbc.driver.OracleDriver';
       break;
     case 'mssql':
-      DRIVER_CLASS = 'net.sourceforge.jtds.jdbc.Driver';
+      var DRIVER_CLASS = 'net.sourceforge.jtds.jdbc.Driver';
       break;
     case 'mariadb':
-      DRIVER_CLASS = 'org.mariadb.jdbc.Driver';
+      var DRIVER_CLASS = 'org.mariadb.jdbc.Driver';
       break;
     default:
       throw new Error('Uknown DBMS type');
@@ -88,6 +85,7 @@ function Sql (conn, query) {
   this.noParams = false;
   var params = Array.prototype.slice.call(arguments, 2);
   var jdbcConn = this.conn._getWrappedConnection();
+  this.returnClob = false;
 
   if (this.query.indexOf('?') !== -1) {
     this.stat = jdbcConn.prepareStatement(this.query);
@@ -152,6 +150,8 @@ Sql.prototype.next = function () {
 };
 
 Sql.prototype._mapResults = function () {
+  var clobTypes = ['interface java.sql.Clob', 'interface oracle.jdbc.OracleNClob'];
+  
   for (var i = 1; i <= this.rsmd.getColumnCount(); i++) { // 1-indexed
     var name = ('' + this.rsmd.getColumnName(i)).toLowerCase();
     var type = Class.forName(this.rsmd.getColumnClassName(i));
@@ -166,12 +166,16 @@ Sql.prototype._mapResults = function () {
       }
     } else if (type === JavaSqlDate) {
       this[name] = this.resultSet.getDate(i).toString();
-    } else if ('' + type === 'interface oracle.jdbc.OracleNClob') {
-      var clob = this.resultSet.getNClob(i);
+    } else if (clobTypes.indexOf('' + type) !== -1) {
+      var clob = this.resultSet.getClob(i);
       if (clob) {
-        var clobText = clob.getSubString(1, clob.length());
-        clob.free();
-        this[name] = clobText;
+        if (this.returnClob) {
+          this[name] = clob;
+        } else {
+          var clobText = clob.getSubString(1, clob.length());
+          clob.free();
+          this[name] = clobText;
+        }
       }
     } else {
       print('Warning: Column type (' + type + ') not implemented. Using getObject.');
@@ -220,21 +224,32 @@ function formatTimestamp (date) {
     pad(date.getSeconds());
 }
 
-function getLogFunc (type) {
+function Log () {
+  this.debugFlag = true;
+}
+
+Log.prototype._getLogFunc = function (type) {
   return function (text) {
+    if (type === 'debug' && !this.debugFlag) {
+      return;
+    }
     var time = formatTimestamp(new Date());
     print('[' + type.toUpperCase() + '] ' + time + ' ' + text);
   };
-}
-
-var log = { // eslint-disable-line no-unused-vars
-  debug: getLogFunc('debug'),
-  info: getLogFunc('info'),
-  warning: getLogFunc('warning'),
-  error: getLogFunc('error'),
-  summary: getLogFunc('summary'),
-  incrementRecordCount: function () {}
 };
+
+Log.prototype.debug = Log.prototype._getLogFunc('debug');
+Log.prototype.info = Log.prototype._getLogFunc('info');
+Log.prototype.warning = Log.prototype._getLogFunc('warning');
+Log.prototype.error = Log.prototype._getLogFunc('error');
+Log.prototype.summary = Log.prototype._getLogFunc('summary');
+
+Log.prototype.incrementRecordCount = function () {};
+Log.prototype.setDebugOn = function (debugFlag) {
+  this.debugFlag = debugFlag;
+};
+
+var log = new Log();
 
 var jsHost = { // eslint-disable-line no-unused-vars
   throwIfAbortRequested: function () {}
